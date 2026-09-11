@@ -6,6 +6,8 @@ import { confirmDialog } from "../app/modal";
 import { notifyDataChanged } from "../app/events";
 import {
   salesRepository,
+  getSavedSeller,
+  saveSeller,
   DEFAULT_SELLER_NAME,
   DEFAULT_SELLER_POSTAL_CODE,
   DEFAULT_SELLER_PHONE,
@@ -101,6 +103,13 @@ export function renderSale(container: HTMLElement, _route: Route): PageCleanup {
         phone: phoneInput.value.trim(),
         address: addressInput ? addressInput.value.trim() : "",
       }),
+      setValues: (info: { name?: string; nationalId?: string; postalCode?: string; phone?: string; address?: string }) => {
+        if (info.name !== undefined) nameInput.value = info.name;
+        if (info.nationalId !== undefined && nationalIdInput) nationalIdInput.value = info.nationalId;
+        if (info.postalCode !== undefined) postalCodeInput.value = info.postalCode;
+        if (info.phone !== undefined) phoneInput.value = info.phone;
+        if (info.address !== undefined && addressInput) addressInput.value = info.address;
+      },
     };
   }
 
@@ -208,6 +217,7 @@ export function renderSale(container: HTMLElement, _route: Route): PageCleanup {
     try {
       const invoice = await salesRepository.createInvoice(cart, details);
       notifyDataChanged();
+      void saveSeller(seller);
 
       const html = await buildInvoiceHtmlWithLogo(invoice);
       downloadInvoiceHtml(html, invoice.number);
@@ -392,6 +402,8 @@ export function renderSale(container: HTMLElement, _route: Route): PageCleanup {
     } catch {
       products = [];
     }
+    const savedSeller = await getSavedSeller();
+    if (savedSeller) sellerParty.setValues(savedSeller);
     renderCart();
     void loadInvoices();
   })();

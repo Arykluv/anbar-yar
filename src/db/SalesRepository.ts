@@ -205,3 +205,40 @@ export class SalesRepository {
 }
 
 export const salesRepository = new SalesRepository();
+
+export interface SellerInfo {
+  name: string;
+  nationalId: string;
+  postalCode: string;
+  phone: string;
+  address: string;
+}
+
+const SAVED_SELLER_KEY = "savedSellerInfo";
+
+export async function getSavedSeller(): Promise<SellerInfo | null> {
+  try {
+    const setting = await db.settings.get(SAVED_SELLER_KEY);
+    if (typeof setting?.value !== "string") return null;
+    const data = JSON.parse(setting.value) as Record<string, unknown>;
+    if (typeof data !== "object" || data === null) return null;
+    const s = (v: unknown): string => (typeof v === "string" ? v : "");
+    return {
+      name: s(data.name),
+      nationalId: s(data.nationalId),
+      postalCode: s(data.postalCode),
+      phone: s(data.phone),
+      address: s(data.address),
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function saveSeller(info: SellerInfo): Promise<void> {
+  try {
+    await db.settings.put({ key: SAVED_SELLER_KEY, value: JSON.stringify(info) });
+  } catch {
+    /* ذخیره نشد؛ دفعهٔ بعد دوباره تلاش می‌شود */
+  }
+}
