@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "description": "سیستم مدیریت انبار محلی و آفلاین با رابط فارسی و راست‌به‌چپ",
-  "author": "ابزار آلات شیرعلی",
+  "author": "انبارنگار",
   "main": "electron/main.cjs",
   "type": "module",
   "scripts": {
@@ -33,7 +33,7 @@
   "build": {
     "appId": "ir.sheraali.anbar",
     "productName": "انبارنگار",
-    "copyright": "Copyright © 2026 ابزار آلات شیرعلی",
+    "copyright": "Copyright © 2026 انبارنگار",
     "directories": {
       "output": "release"
     },

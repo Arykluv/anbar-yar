@@ -10,7 +10,7 @@ const path = require("node:path");
 
 app.setName("anbar-yar");
 
-const APP_TITLE = "انبارنگار — ابزار آلات شیرعلی";
+const APP_TITLE = "انبارنگار";
 const TOROB_PORT = 4170;
 const TOROB_HOST = "torob.com";
 const RATE_API_HOST = "apiv2.nobitex.ir";

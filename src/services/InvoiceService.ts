@@ -111,7 +111,7 @@ export function buildInvoiceHtml(
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8" />
-<title>فروشگاه ابزارآلات شیرعلی — فاکتور ${numberText}</title>
+<title>انبارنگار — فاکتور ${numberText}</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -205,8 +205,8 @@ export function buildInvoiceHtml(
   <div class="invoice">
     <header>
       <div class="brand">
-        <img class="invoice-logo" src="${logoUri}" alt="لوگوی فروشگاه ابزارآلات شیرعلی" />
-        <h1>فروشگاه ابزارآلات شیرعلی</h1>
+        <img class="invoice-logo" src="${logoUri}" alt="لوگوی انبارنگار" />
+        <h1>${escapeHtml(seller.name || "انبارنگار")}</h1>
       </div>
       <div class="meta">
         <div>شمارهٔ فاکتور: <strong>${numberText}</strong></div>
@@ -241,7 +241,7 @@ ${rows}
     </div>
     <footer>
       <span>این سند به‌صورت الکترونیکی صادر شده است.</span>
-      <span>ابزار آلات شیرعلی — مدیریت: بابک شیرعلی</span>
+      <span>سامانهٔ فاکتور الکترونیکی انبارنگار</span>
     </footer>
   </div>
 </body>

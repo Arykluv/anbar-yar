@@ -146,9 +146,9 @@ describe("فاکتور فروش", () => {
     expect(next.number).toBe(3);
   });
 
-  it("فروشنده به‌صورت پیش‌فرض ابزار آلات شیرعلی است", async () => {
+  it("فروشنده به‌صورت پیش‌فرض خالی است", async () => {
     const invoice = await salesRepository.createInvoice([{ name: "کالا", quantity: 1, price: 100, productId: null }]);
-    expect(invoice.sellerName).toBe("ابزار آلات شیرعلی");
+    expect(invoice.sellerName).toBe("");
     expect(invoice.buyerName).toBe("");
     expect(invoice.paymentType).toBe("cash");
     expect(invoice.sellerNationalId).toBe("");
@@ -189,7 +189,7 @@ describe("HTML فاکتور", () => {
   const invoice = {
     number: 7,
     createdAt: new Date(2026, 8, 6, 12, 30),
-    sellerName: "ابزار آلات شیرعلی",
+    sellerName: "فروشگاه نمونه",
     sellerNationalId: "0012345678",
     sellerPostalCode: "1234567890",
     sellerPhone: "09121234567",
@@ -216,7 +216,7 @@ describe("HTML فاکتور", () => {
 
   it("اطلاعات فروشنده، خریدار و نوع پرداخت را نشان می‌دهد", () => {
     const html = buildInvoiceHtml(invoice);
-    expect(html).toContain("ابزار آلات شیرعلی");
+    expect(html).toContain("فروشگاه نمونه");
     expect(html).toContain("شرکت نمونه");
     expect(html).toContain("غیر نقدی");
   });
@@ -253,7 +253,7 @@ describe("HTML فاکتور", () => {
       buyerPhone: undefined,
       paymentType: undefined,
     });
-    expect(html).toContain("ابزار آلات شیرعلی");
+    expect(html).toContain("انبارنگار");
     expect(html).toContain("نقدی");
     expect(html).not.toContain("کد ملی:");
     expect(html).not.toContain("آدرس:");
@@ -263,12 +263,12 @@ describe("HTML فاکتور", () => {
     const html = buildInvoiceHtml(invoice);
     expect(html).toContain('dir="rtl"');
     expect(html).toContain("@page");
-    expect(html).toContain("فروشگاه ابزارآلات شیرعلی");
+    expect(html).toContain("فروشگاه نمونه");
   });
 
   it("لوگو (به‌صورت تنبل، خارج از باندل) و عنوان فاکتور را نشان می‌دهد", () => {
     const html = buildInvoiceHtml(invoice);
-    expect(html).toContain("<title>فروشگاه ابزارآلات شیرعلی");
+    expect(html).toContain("<title>انبارنگار");
     expect(html).toContain('class="invoice-logo"');
     expect(html).toContain("height: 76px");
     expect(html).toContain('src=""'); // لوگو به‌صورت تنبل و هنگام چاپ اضافه می‌شود

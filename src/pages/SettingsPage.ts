@@ -235,8 +235,7 @@ export function renderSettings(container: HTMLElement, _route: Route): PageClean
     card(
       { class: "settings-card", title: "دربارهٔ برنامه" },
       h("ul", { class: "about-list" },
-        h("li", { text: "نرم‌افزار انبارنگار — ابزار آلات شیرعلی" }),
-        h("li", { text: "مدیر: بابک شیرعلی" }),
+        h("li", { text: "نرم‌افزار انبارنگار" }),
         h("li", { text: "نسخه: ۱.۰.۰" }),
         h("li", { text: "ذخیره‌سازی: کاملاً محلی در مرورگر (IndexedDB) — نیازی به سرور یا اینترنت نیست." }),
         h("li", { text: "حالت آفلاین: پس از اولین بارگذاری، بدون اینترنت نیز کار می‌کند." }),

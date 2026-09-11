@@ -89,7 +89,7 @@ function buildSidebar(): HTMLElement {
   return h(
     "aside",
     { class: "sidebar" },
-    h("div", { class: "brand" }, h("span", { class: "brand-icon", text: "🛠️" }), h("span", { class: "brand-name", text: "ابزار آلات شیرعلی" })),
+    h("div", { class: "brand" }, h("span", { class: "brand-icon", text: "🛠️" }), h("span", { class: "brand-name", text: "انبارنگار" })),
     h(
       "nav",
       { class: "nav", attrs: { "aria-label": "منوی اصلی" } },
@@ -100,7 +100,6 @@ function buildSidebar(): HTMLElement {
     h(
       "div",
       { class: "sidebar-foot" },
-      h("p", { class: "brand-owner", text: "مدیر: بابک شیرعلی" }),
       h("span", { class: "offline-badge", attrs: { id: "offline-badge" }, text: "آفلاین" }),
     ),
   );

@@ -3,16 +3,16 @@ import { recordPriceHistory } from "./SettingsRepository";
 import { AppError, ErrCodes } from "../services/errors";
 import type { Invoice, InvoiceItem, PaymentType } from "../models/types";
 
-/** نام فروشندهٔ پیش‌فرض فاکتور */
-export const DEFAULT_SELLER_NAME = "ابزار آلات شیرعلی";
+/** نام فروشندهٔ پیش‌فرض فاکتور (به‌صورت خالی؛ کاربر خودش تکمیل می‌کند) */
+export const DEFAULT_SELLER_NAME = "";
 
 /** کلید شمارندهٔ فاکتور در جدول settings؛ حذف فاکتورها این شمارنده را عقب نمی‌برد */
 export const LAST_INVOICE_NUMBER_KEY = "lastInvoiceNumber";
 
-/** مشخصات فروشندهٔ پیش‌فرض فاکتور */
-export const DEFAULT_SELLER_POSTAL_CODE = "6373163786";
-export const DEFAULT_SELLER_PHONE = "09166551173";
-export const DEFAULT_SELLER_ADDRESS = "امیدیه، بلوار امام خمینی بعد از میدان بسیج، جنب کابینت‌سازی مرکزی";
+/** مشخصات فروشندهٔ پیش‌فرض فاکتور (خالی) */
+export const DEFAULT_SELLER_POSTAL_CODE = "";
+export const DEFAULT_SELLER_PHONE = "";
+export const DEFAULT_SELLER_ADDRESS = "";
 
 export const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
   cash: "نقدی",

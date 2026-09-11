@@ -58,10 +58,10 @@ function makeInvoice(overrides: Partial<Invoice> = {}): Invoice {
   return {
     number: 1,
     createdAt: new Date("2026-01-01T10:00:00.000Z"),
-    sellerName: "ابزار آلات شیرعلی",
+    sellerName: "",
     sellerNationalId: "",
-    sellerPostalCode: "6373163786",
-    sellerPhone: "09166551173",
+    sellerPostalCode: "",
+    sellerPhone: "",
     sellerAddress: "",
     buyerName: "مشتری",
     buyerNationalId: "",
