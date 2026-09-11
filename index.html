@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("anbar-theme");
+          var dark = stored && stored === "dark"
+            ? true
+            : stored === "light"
+              ? false
+              : window.matchMedia("(prefers-color-scheme: dark)").matches;
+          document.documentElement.dataset.theme = dark ? "dark" : "light";
+          if (localStorage.getItem("anbar-lite") === "1") {
+            document.documentElement.dataset.lite = "1";
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="نرم‌افزار انبارنگار — مدیریت موجودی و صدور فاکتور ابزار آلات شیرعلی (آفلاین و کاملاً محلی)" />
+    <meta name="theme-color" content="#f2f2f7" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="./icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="ابزار آلات شیرعلی" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <title>ابزار آلات شیرعلی — انبارنگار</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <noscript>برای استفاده از این برنامه، جاوااسکریپت باید فعال باشد.</noscript>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+
+# packaged desktop app (releases, installers, portable builds)
+release/
+win-unpacked/
+
+# local backups containing real inventory/invoice data — never commit
+backups/
+**/backup/
+*.json.bak
+
+# old project archive
+*.zip
+
+# misc local artifacts
+nultitle
+proxy-run.log
+*.local
+*.log
+.DS_Store
+npm-debug.log*

@@ -1,0 +1,67 @@
+{
+  "name": "anbar-persian-inventory",
+  "private": true,
+  "version": "1.0.0",
+  "description": "سیستم مدیریت انبار محلی و آفلاین با رابط فارسی و راست‌به‌چپ",
+  "author": "ابزار آلات شیرعلی",
+  "main": "electron/main.cjs",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "proxy": "node scripts/torob-proxy.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "icons": "node scripts/generate-icons.mjs",
+    "app:pack": "npm run build && electron-builder --win"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dexie": "^4.4.5"
+  },
+  "devDependencies": {
+    "electron": "^37.10.3",
+    "electron-builder": "^26.15.3",
+    "fake-indexeddb": "^6.2.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2",
+    "vitest": "^5.0.0"
+  },
+  "build": {
+    "appId": "ir.sheraali.anbar",
+    "productName": "انبارنگار",
+    "copyright": "Copyright © 2026 ابزار آلات شیرعلی",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**",
+      "electron/**",
+      "public/**",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "portable",
+        "nsis"
+      ],
+      "icon": "public/icons/icon-512.png",
+      "artifactName": "Anbar-Yar-${version}-win-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "انبارنگار",
+      "deleteAppDataOnUninstall": false
+    },
+    "portable": {
+      "artifactName": "Anbar-Yar-${version}-portable.exe"
+    }
+  }
+}
