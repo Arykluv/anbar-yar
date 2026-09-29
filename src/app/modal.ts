@@ -1,5 +1,46 @@
 import { h } from "./dom";
 
+/** دیالوگ سفارشی با محتوای دلخواه؛ با Esc یا کلیک روی پس‌زمینه بسته می‌شود */
+export interface ModalOptions {
+  title: string;
+  content: HTMLElement;
+  actions?: HTMLElement;
+}
+
+export function openModal(options: ModalOptions): { close: () => void } {
+  const overlay = h("div", { class: "modal-overlay", attrs: { role: "dialog" } });
+  const dialog = h("div", { class: "modal modal-form", attrs: { role: "document" } });
+
+  const title = h("h2", { class: "modal-title", text: options.title });
+  const body = h("div", { class: "modal-content" });
+  body.appendChild(options.content);
+
+  const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+  function close(): void {
+    overlay.remove();
+    window.removeEventListener("keydown", onKey);
+    if (previouslyFocused) previouslyFocused.focus();
+  }
+  function onKey(event: KeyboardEvent): void {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      close();
+    }
+  }
+
+  overlay.addEventListener("mousedown", (e) => {
+    if (e.target === overlay) close();
+  });
+  window.addEventListener("keydown", onKey);
+
+  dialog.append(title, body);
+  if (options.actions) dialog.appendChild(options.actions);
+  overlay.appendChild(dialog);
+  document.body.appendChild(overlay);
+  return { close };
+}
+
 export interface ConfirmOptions {
   title: string;
   message: string;

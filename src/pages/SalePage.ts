@@ -23,7 +23,7 @@ import {
   printInvoice,
   invoiceFileName,
 } from "../services/InvoiceService";
-import { normalizeForComparison, parsePriceInput, parseQuantityInput } from "../models/product";
+import { normalizeForComparison, parseNumericInput, parsePriceInput, parseQuantityInput } from "../models/product";
 import type { Invoice, PaymentType, Product } from "../models/types";
 import { formatJalali, formatNumber, formatPrice, toFaDigits } from "../utils/format";
 import { AppError } from "../services/errors";
@@ -129,7 +129,10 @@ export function renderSale(container: HTMLElement, _route: Route): PageCleanup {
   paymentSelect.classList.add("sale-pay-select");
   const paymentBlock = h("div", { class: "field sale-pay-field" }, h("label", { class: "field-label", text: "نوع پرداخت" }), paymentSelect);
 
-  const infoCardRow = h("div", { class: "sale-info-grid" }, sellerParty.root, buyerParty.root, paymentBlock);
+  const discountInput = input("text", { placeholder: "مثلاً ۱۰", inputmode: "numeric", autocomplete: "off" });
+  const discountBlock = h("div", { class: "field sale-pay-field" }, h("label", { class: "field-label", text: "تخفیف (٪)" }), discountInput);
+
+  const infoCardRow = h("div", { class: "sale-info-grid" }, sellerParty.root, buyerParty.root, paymentBlock, discountBlock);
 
   const cartCard = card(
     { class: "sale-cart", title: "سبد فروش" },
@@ -141,6 +144,18 @@ export function renderSale(container: HTMLElement, _route: Route): PageCleanup {
   );
 
   // ---------- ثبت نهایی ----------
+  function currentDiscountPercent(): number {
+    const n = parseNumericInput(discountInput.value);
+    if (n === null) return 0;
+    if (n < 0) return 0;
+    if (n > 100) return 100;
+    return Math.round(n);
+  }
+
+  function cartSubtotal(): number {
+    return cart.reduce((sum, item) => sum + item.quantity * item.price, 0);
+  }
+
   function addToCart(): void {
     const name = nameInput.value.trim();
     if (!name) {
@@ -186,6 +201,7 @@ export function renderSale(container: HTMLElement, _route: Route): PageCleanup {
     const paymentType: PaymentType = paymentSelect.value === "credit" ? "credit" : "cash";
     const seller = sellerParty.values();
     const buyer = buyerParty.values();
+    const discountPercent = currentDiscountPercent();
     const details: InvoiceDetails = {
       sellerName: seller.name,
       sellerNationalId: seller.nationalId,
@@ -197,13 +213,17 @@ export function renderSale(container: HTMLElement, _route: Route): PageCleanup {
       buyerPostalCode: buyer.postalCode,
       buyerPhone: buyer.phone,
       paymentType,
+      discountPercent,
     };
-    const total = cart.reduce((sum, item) => sum + item.quantity * item.price, 0);
+    const subtotal = cartSubtotal();
+    const discountAmount = Math.round((subtotal * discountPercent) / 100);
+    const total = subtotal - discountAmount;
     const summary = [
       details.buyerName ? `خریدار: ${details.buyerName}` : "خریدار: (نامشخص)",
       `${details.buyerPhone ? `تلفن: ${details.buyerPhone}` : ""}`.trim(),
       `نوع پرداخت: ${PAYMENT_TYPE_LABELS[paymentType]}`,
       ...cart.map((item) => `• ${item.name}: ${toFaDigits(String(item.quantity))} × ${formatNumber(item.price)} تومان`),
+      discountPercent > 0 ? `تخفیف (${toFaDigits(String(discountPercent))}٪): −${formatNumber(discountAmount)} تومان` : "",
       `جمع کل: ${formatNumber(total)} تومان`,
     ].join("\n");
 
@@ -245,6 +265,11 @@ export function renderSale(container: HTMLElement, _route: Route): PageCleanup {
   function renderCart(): void {
     clear(cartArea);
 
+    const subtotal = cartSubtotal();
+    const discountPercent = currentDiscountPercent();
+    const discountAmount = Math.round((subtotal * discountPercent) / 100);
+    const total = subtotal - discountAmount;
+
     if (cart.length === 0) {
       cartArea.appendChild(h("p", { class: "muted", text: "هیچ کالایی به سبد اضافه نشده است." }));
     } else {
@@ -282,20 +307,39 @@ export function renderSale(container: HTMLElement, _route: Route): PageCleanup {
       });
       table.appendChild(tbody);
 
-      const total = cart.reduce((sum, item) => sum + item.quantity * item.price, 0);
-      const totalRow = h("tr", { class: "total-row" },
+      const tfoot = h("tfoot", {});
+      const subtotalRow = h("tr", { class: "total-row" },
         h("td", { attrs: { colspan: "4" }, text: "جمع کل" }),
-        h("td", { class: "left strong", text: `${toFaDigits(formatNumber(total))} تومان` }),
+        h("td", { class: "left strong", text: `${toFaDigits(formatNumber(subtotal))} تومان` }),
         h("td", {}),
       );
-      table.appendChild(h("tfoot", {}, totalRow));
+      tfoot.appendChild(subtotalRow);
+      if (discountPercent > 0) {
+        tfoot.appendChild(h("tr", { class: "discount-row" },
+          h("td", { attrs: { colspan: "4" }, text: `تخفیف (${toFaDigits(String(discountPercent))}٪)` }),
+          h("td", { class: "left", text: `−${toFaDigits(formatNumber(discountAmount))} تومان` }),
+          h("td", {}),
+        ));
+        tfoot.appendChild(h("tr", { class: "grand-total-row" },
+          h("td", { attrs: { colspan: "4" }, text: "مبلغ قابل پرداخت" }),
+          h("td", { class: "left strong", text: `${toFaDigits(formatNumber(total))} تومان` }),
+          h("td", {}),
+        ));
+      }
+      table.appendChild(tfoot);
       cartArea.appendChild(table);
     }
 
     totalsLine.textContent =
-      cart.length > 0 ? `جمع کل: ${toFaDigits(formatNumber(cart.reduce((s, i) => s + i.quantity * i.price, 0)))} تومان` : "";
+      cart.length > 0
+        ? discountPercent > 0
+          ? `جمع کل: ${toFaDigits(formatNumber(subtotal))} تومان — تخفیف ${toFaDigits(formatNumber(discountAmount))} تومان — قابل پرداخت: ${toFaDigits(formatNumber(cartSubtotal() - discountAmount))} تومان`
+          : `جمع کل: ${toFaDigits(formatNumber(cartSubtotal()))} تومان`
+        : "";
     finalizeBtn.disabled = cart.length === 0;
   }
+
+  discountInput.addEventListener("input", () => renderCart());
 
   // ---------- فاکتورهای قبلی ----------
   const invoicesCard = card({ class: "sale-history", title: "فاکتورهای قبلی" });

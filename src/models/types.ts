@@ -29,6 +29,12 @@ export interface Invoice {
   paymentType: PaymentType;
   items: InvoiceItem[];
   total: number;
+  /** مجموع مبلغ کالاها قبل از تخفیف */
+  subtotal?: number;
+  /** تخفیف درصدی روی فاکتور (۰ تا ۱۰۰) */
+  discountPercent?: number;
+  /** مبلغ تخفیف = مجموع کالاها × درصد تخفیف */
+  discountAmount?: number;
 }
 
 /** وضعیت موجودی یک کالا */
@@ -103,6 +109,9 @@ export interface BackupInvoice {
   paymentType: PaymentType;
   items: InvoiceItem[];
   total: number;
+  subtotal?: number;
+  discountPercent?: number;
+  discountAmount?: number;
 }
 
 export type BackupProduct = Omit<Product, "image" | "createdAt" | "updatedAt"> & {

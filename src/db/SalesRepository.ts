@@ -39,6 +39,8 @@ export interface InvoiceDetails {
   buyerPostalCode?: string;
   buyerPhone?: string;
   paymentType?: PaymentType;
+  /** تخفیف درصدی روی جمع فاکتور (۰ تا ۱۰۰) */
+  discountPercent?: number;
 }
 
 /** پاک‌سازی عدد تعداد: عدد صحیح مثبت یا null */
@@ -58,6 +60,15 @@ function cleanPrice(value: unknown): number | null {
 function cleanName(value: unknown): string {
   const s = typeof value === "string" ? value.trim() : "";
   return s.slice(0, 500);
+}
+
+/** تخفیف درصدی مجاز: عدد بین ۰ تا ۱۰۰ (خارج از محدوده به نزدیک‌ترین حد می‌چسبد) */
+function cleanDiscountPercent(value: unknown): number {
+  const n = typeof value === "number" && Number.isFinite(value) ? value : Number(value);
+  if (!Number.isFinite(n)) return 0;
+  if (n < 0) return 0;
+  if (n > 100) return 100;
+  return Math.round(n);
 }
 
 /** پاک‌سازی رشته‌های کوتاه (کد ملی، کد پستی، تلفن) */
@@ -134,6 +145,7 @@ export class SalesRepository {
     const sellerName = cleanName(details.sellerName) || DEFAULT_SELLER_NAME;
     const buyerName = cleanName(details.buyerName);
     const paymentType: PaymentType = details.paymentType === "credit" ? "credit" : "cash";
+    const discountPercent = cleanDiscountPercent(details.discountPercent);
     const sellerParty = {
       sellerNationalId: cleanShort(details.sellerNationalId),
       sellerPostalCode: cleanShort(details.sellerPostalCode),
@@ -183,7 +195,9 @@ export class SalesRepository {
         });
       }
 
-      const total = items.reduce((sum, item) => sum + item.quantity * item.price, 0);
+      const subtotal = items.reduce((sum, item) => sum + item.quantity * item.price, 0);
+      const discountAmount = Math.round((subtotal * discountPercent) / 100);
+      const total = subtotal - discountAmount;
       const number = (await this.lastAllocatedNumber()) + 1;
       const createdAt = new Date();
       const invoice: Invoice = {
@@ -194,6 +208,9 @@ export class SalesRepository {
         paymentType,
         items,
         total,
+        subtotal,
+        discountPercent,
+        discountAmount,
         ...sellerParty,
         ...buyerParty,
       };

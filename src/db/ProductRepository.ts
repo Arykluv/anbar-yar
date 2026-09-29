@@ -1,4 +1,5 @@
 import { db } from "../db/InventoryDB";
+import { recordPriceHistory } from "../db/SettingsRepository";
 import {
   computeAvailability,
   normalizeForComparison,
@@ -138,6 +139,38 @@ export class ProductRepository {
       db.products.where("quantity").equals(0).count(),
     ]);
     return { total, available, unavailable };
+  }
+
+  /**
+   * افزایش (یا کاهش) درصدی یک فیلد قیمت برای محصولاتِ انتخاب‌شده.
+   * فقط محصولاتی که قیمتِ آن‌ها موجود باشد تغییر می‌کنند.
+   * برای هر تغییر، تاریخچهٔ قیمت ثبت می‌شود. تعداد تغییرات را برمی‌گرداند.
+   */
+  async changePrices(
+    ids: number[],
+    field: "purchasePrice" | "sellingPrice" | "listPrice",
+    percent: number,
+  ): Promise<number> {
+    if (ids.length === 0) return 0;
+    if (!Number.isFinite(percent)) return 0;
+    const factor = 1 + percent / 100;
+    let changed = 0;
+    await db.transaction("rw", db.products, db.priceHistory, async () => {
+      for (const id of ids) {
+        const product = await db.products.get(id);
+        if (!product) continue;
+        const oldValue = product[field];
+        if (typeof oldValue !== "number" || !Number.isFinite(oldValue) || oldValue <= 0) continue;
+        const newValue = Math.round(oldValue * factor);
+        if (newValue === oldValue) continue;
+        const updateSpec: Record<string, number | Date> = { updatedAt: new Date() };
+        updateSpec[field] = newValue;
+        await db.products.update(id, updateSpec as unknown as Parameters<typeof db.products.update>[1]);
+        await recordPriceHistory({ productId: id, field, oldValue, newValue, changedAt: new Date() });
+        changed++;
+      }
+    });
+    return changed;
   }
 
   /** لیست دسته‌بندی‌های موجود */

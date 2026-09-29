@@ -87,7 +87,8 @@ function partyInfoHtml(boxClass: string, title: string, party: PartyFields): str
  * و تمام محتوا در یک صفحهٔ A4 جای بگیرد.
  */
 export function buildInvoiceHtml(
-  invoice: Pick<Invoice, "number" | "createdAt" | "items" | "total"> & Partial<Pick<Invoice, "sellerName" | "sellerNationalId" | "sellerPostalCode" | "sellerPhone" | "sellerAddress" | "buyerName" | "buyerNationalId" | "buyerPostalCode" | "buyerPhone" | "paymentType">>,
+  invoice: Pick<Invoice, "number" | "createdAt" | "items" | "total" | "subtotal" | "discountPercent" | "discountAmount"> &
+    Partial<Pick<Invoice, "sellerName" | "sellerNationalId" | "sellerPostalCode" | "sellerPhone" | "sellerAddress" | "buyerName" | "buyerNationalId" | "buyerPostalCode" | "buyerPhone" | "paymentType">>,
   logoUri = "",
 ): string {
   const { seller, buyer, paymentType } = normalizeInvoice(invoice);
@@ -171,6 +172,10 @@ export function buildInvoiceHtml(
   tbody tr:nth-child(even) { background: #f8fafc; }
   .total-row { background: #eef2ff; font-weight: 700; }
   .total-row td:last-child { color: #1d4ed8; }
+  .discount-row { background: #fef2f2; font-weight: 600; }
+  .discount-row td:last-child { color: #b91c1c; }
+  .grand-total-row { background: #eef2ff; font-weight: 700; font-size: 1.02em; }
+  .grand-total-row td:last-child { color: #1d4ed8; }
   .signatures {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -227,8 +232,19 @@ ${rows}
       <tfoot>
         <tr class="total-row">
           <td colspan="4">جمع کل</td>
-          <td>${escapeHtml(priceText(invoice.total))}</td>
+          <td>${escapeHtml(priceText(invoice.subtotal ?? Number(invoice.total) + (Number(invoice.discountAmount) || 0)))}</td>
         </tr>
+        ${Number(invoice.discountPercent) > 0
+          ? `
+        <tr class="discount-row">
+          <td colspan="4">تخفیف (${toFaDigits(String(invoice.discountPercent))}٪)</td>
+          <td>−${escapeHtml(priceText(invoice.discountAmount ?? 0))}</td>
+        </tr>
+        <tr class="grand-total-row">
+          <td colspan="4">مبلغ قابل پرداخت</td>
+          <td>${escapeHtml(priceText(invoice.total))}</td>
+        </tr>`
+          : ""}
       </tfoot>
     </table>
     <div class="parties totals">
@@ -331,7 +347,8 @@ export function printInvoice(html: string): boolean {
 
 /** نمایش خلاصهٔ متنی یک فاکتور برای گفت‌وگوی تأیید */
 export function invoiceSummaryText(
-  invoice: Pick<Invoice, "number" | "items" | "total"> & Partial<Pick<Invoice, "sellerName" | "buyerName" | "paymentType">>,
+  invoice: Pick<Invoice, "number" | "items" | "total" | "subtotal" | "discountPercent" | "discountAmount"> &
+    Partial<Pick<Invoice, "sellerName" | "buyerName" | "paymentType">>,
 ): string {
   const { buyer, paymentType } = normalizeInvoice(invoice);
   const lines: string[] = [];
@@ -341,6 +358,9 @@ export function invoiceSummaryText(
   for (const item of invoice.items) {
     lines.push(`• ${item.name}: ${toFaDigits(String(item.quantity))} × ${priceText(item.price)}`);
   }
-  lines.push(`جمع کل: ${priceText(invoice.total)}`);
+  if (Number(invoice.discountPercent) > 0) {
+    lines.push(`تخفیف (${toFaDigits(String(invoice.discountPercent))}٪): −${priceText(invoice.discountAmount ?? 0)}`);
+  }
+  lines.push(Number(invoice.discountPercent) > 0 ? `مبلغ قابل پرداخت: ${priceText(invoice.total)}` : `جمع کل: ${priceText(invoice.total)}`);
   return lines.join("\n");
 }

@@ -1748,6 +1748,90 @@ textarea {
   justify-content: flex-end;
 }
 
+.modal-form {
+  max-width: 680px;
+}
+
+.modal-content {
+  margin: 10px 0 18px;
+}
+
+.modal-hint {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.9;
+  margin: 0 0 14px;
+}
+
+/* ---------- افزایش قیمت گروهی ---------- */
+.page-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.price-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.price-controls .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pick-all {
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.pick-list {
+  max-height: 260px;
+  overflow: auto;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 2px 0 10px;
+}
+
+.pick-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.pick-row:hover {
+  background: rgba(127, 127, 255, 0.07);
+}
+
+.pick-row input[type="checkbox"] {
+  flex: none;
+}
+
+.pick-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pick-price {
+  flex: none;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
 /* ---------- تنظیمات ---------- */
 .settings {
   display: flex;
@@ -2103,6 +2187,18 @@ textarea {
 }
 
 .cart-table .total-row td {
+  background: var(--primary-soft);
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.cart-table .discount-row td {
+  background: rgba(127, 127, 255, 0.05);
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.cart-table .grand-total-row td {
   background: var(--primary-soft);
   font-weight: 800;
   color: var(--primary);

@@ -57,6 +57,9 @@ export async function serializeBackup(products: Product[], invoices: Invoice[] =
     buyerPhone: inv.buyerPhone ?? "",
     paymentType: inv.paymentType === "credit" ? "credit" : "cash",
     items: inv.items ?? [],
+    subtotal: inv.subtotal ?? ((inv.total ?? 0) + (inv.discountAmount ?? 0)),
+    discountPercent: inv.discountPercent ?? 0,
+    discountAmount: inv.discountAmount ?? 0,
     total: inv.total ?? 0,
   }));
   const settings = await db.settings.toArray();
@@ -143,6 +146,9 @@ export function validateBackupFile(data: unknown): BackupFile {
       const createdAt = typeof rec.createdAt === "string" ? new Date(rec.createdAt) : new Date();
       const number = validNumber(rec.number, 0, true);
       const total = nullableNumber(rec.total) ?? 0;
+      const subtotal = nullableNumber(rec.subtotal) ?? total + (nullableNumber(rec.discountAmount) ?? 0);
+      const discountPercent = Math.min(100, Math.max(0, nullableNumber(rec.discountPercent) ?? 0));
+      const discountAmount = Math.min(subtotal, nullableNumber(rec.discountAmount) ?? Math.round((subtotal * discountPercent) / 100));
       const invoiceId = typeof rec.id === "number" && Number.isInteger(rec.id) && rec.id > 0 ? rec.id : 0;
       const paymentType: BackupInvoice["paymentType"] = rec.paymentType === "credit" ? "credit" : "cash";
       const items = Array.isArray(rec.items)
@@ -170,6 +176,9 @@ export function validateBackupFile(data: unknown): BackupFile {
         buyerPhone: typeof rec.buyerPhone === "string" ? rec.buyerPhone : "",
         paymentType,
         items,
+        subtotal,
+        discountPercent,
+        discountAmount,
         total,
       });
     }
@@ -304,6 +313,9 @@ export function backupInvoiceToInvoice(bi: BackupInvoice): Invoice {
     buyerPhone: bi.buyerPhone ?? "",
     paymentType: bi.paymentType === "credit" ? "credit" : "cash",
     items: bi.items ?? [],
+    subtotal: bi.subtotal ?? (bi.total ?? 0) + (bi.discountAmount ?? 0),
+    discountPercent: bi.discountPercent ?? 0,
+    discountAmount: bi.discountAmount ?? 0,
     total: bi.total ?? 0,
   };
 }
