@@ -12,6 +12,7 @@ app.setName("anbar-yar");
 
 const APP_TITLE = "انبارنگار";
 const TOROB_PORT = 4170;
+const APP_PORT = 4171;
 const TOROB_HOST = "torob.com";
 const RATE_API_HOST = "apiv2.nobitex.ir";
 const PROXY_ALLOWED_HOSTS = [TOROB_HOST, RATE_API_HOST];
@@ -71,6 +72,56 @@ function backupsRoot() {
     return path.join(portableDir, "backup");
   }
   return path.join(app.getPath("userData"), "backups");
+}
+
+// ---------- پایداری داده‌ها ----------
+// مرورگر داده‌ها را بر اساس "origin" جدا می‌کند. چون در نسخه‌های قبلی پورت سرورِ
+// برنامه تصادفی بود، با هر اجرا origin عوض می‌شد و داده‌های IndexedDB از دست می‌رفت.
+// پورت ۴۱۷۱ ثابت است. این تابع یک‌بار داده‌های ذخیره‌شدهٔ قدیمی را به origin جدید منتقل می‌کند.
+
+function indexDbDirName(port) {
+  return `http_127.0.0.1_${port}.indexeddb.leveldb`;
+}
+
+function dirTotalBytes(dir) {
+  let total = 0;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) total += dirTotalBytes(full);
+    else if (entry.isFile()) total += fs.statSync(full).size;
+  }
+  return total;
+}
+
+function migrateIndexedDbOrigins() {
+  try {
+    const root = path.join(app.getPath("userData"), "IndexedDB");
+    if (!fs.existsSync(root)) return;
+    const current = indexDbDirName(APP_PORT);
+    const target = path.join(root, current);
+    if (fs.existsSync(target)) return; // دادهٔ جدید همین‌جاست؛ نیازی به منتقل کردن نیست
+
+    const legacy = fs
+      .readdirSync(root, { withFileTypes: true })
+      .filter((e) => e.isDirectory() && /^http_127\.0\.0\.1_\d+\.indexeddb\.leveldb$/.test(e.name) && e.name !== current)
+      .map((e) => {
+        const full = path.join(root, e.name);
+        return { name: e.name, full, size: dirTotalBytes(full), mtime: fs.statSync(full).mtimeMs };
+      });
+    if (legacy.length === 0) return;
+
+    const newest = legacy.sort((a, b) => b.mtime - a.mtime)[0];
+    if (newest.size < 800) return; // همهٔ نسخه‌های قدیمی خالی‌اند
+
+    fs.cpSync(newest.full, target, { recursive: true });
+    try {
+      fs.rmSync(path.join(target, "LOCK"), { force: true });
+    } catch {}
+    logToFile(`data-migrated: ${newest.name} -> ${current}`);
+    console.log(`[anbar] انتقال داده از origin قدیمی ${newest.name} به ${current}.`);
+  } catch (err) {
+    logToFile(`data-migration-error: ${err && err.message ? err.message : String(err)}`);
+  }
 }
 
 function timestampName() {
@@ -206,7 +257,7 @@ function createAppServer() {
         res.end(data);
       });
     })
-    .listen(0, "127.0.0.1");
+    .listen(APP_PORT, "127.0.0.1");
 }
 
 // ---------- پروکسی ترب (پورت ۴۱۷۰؛ در صورت اشغال بودن، نسخهٔ دیگر آن را می‌گیرد) ----------
@@ -358,9 +409,11 @@ if (!gotLock) {
   });
 
   app.whenReady().then(() => {
+    migrateIndexedDbOrigins();
     startTorobProxy();
     const appServer = createAppServer();
     appServer.on("error", (err) => {
+      logToFile(`app-server-error: ${err && err.message ? err.message : String(err)}`);
       console.error("خطا در راه‌اندازی سرور برنامه:", err.message);
       app.quit();
     });
